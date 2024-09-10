@@ -8,6 +8,8 @@ public class InputController {
     private static BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     private static boolean isClosed = false; // Per evitare di chiudere più volte
 
+    private InputController() {}
+
     public static String getInput() throws IOException {
         if (isClosed) {
             throw new IOException("Il flusso di input è già chiuso.");

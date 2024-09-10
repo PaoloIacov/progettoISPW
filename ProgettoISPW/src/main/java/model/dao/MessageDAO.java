@@ -1,5 +1,7 @@
 package model.dao;
 
+import model.bean.MessageBean;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -27,21 +29,17 @@ public class MessageDAO {
     }
 
     // Metodo per ottenere tutti i messaggi di una conversazione specifica
-    public List<String[]> getMessagesByConversationId(long conversationId) throws SQLException {
-        List<String[]> messages = new ArrayList<>();
-        String query = "SELECT ID, conversationID, senderUsername, content, datetime FROM Message WHERE conversationID = ? ORDER BY datetime ASC";
+    public List<MessageBean> getMessagesByConversationId(long conversationId) throws SQLException {
+        List<MessageBean> messages = new ArrayList<>();
+        String query = "SELECT senderUsername, content FROM Message WHERE conversationID = ? ORDER BY datetime ASC";
 
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setLong(1, conversationId);
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
-                    String[] message = {
-                            rs.getString("ID"),
-                            rs.getString("conversationID"),
-                            rs.getString("senderUsername"),
-                            rs.getString("content"),
-                            rs.getString("datetime")
-                    };
+                    String senderUsername = rs.getString("senderUsername");
+                    String content = rs.getString("content");
+                    MessageBean message = new MessageBean(senderUsername, content);
                     messages.add(message);
                 }
             }

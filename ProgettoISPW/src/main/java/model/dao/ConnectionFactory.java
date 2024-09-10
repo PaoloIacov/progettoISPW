@@ -9,6 +9,8 @@ import java.util.Properties;
 
 public class ConnectionFactory {
 
+    private ConnectionFactory() {}
+
     private static Properties properties;
 
     // Blocco statico per caricare le proprietà al momento del caricamento della classe
@@ -56,7 +58,7 @@ public class ConnectionFactory {
                 passKey = "ADMIN_PASS";
                 break;
             default:
-                throw new SQLException("Ruolo non valido: " + role);
+                throw new SQLException("Non valid role: " + role);
         }
 
         // Recupero delle credenziali dal file properties
@@ -64,7 +66,7 @@ public class ConnectionFactory {
         String pass = properties.getProperty(passKey);
 
         if (user == null || pass == null) {
-            throw new SQLException("Credenziali non trovate per il ruolo: " + role);
+            throw new SQLException("Credentials not found: " + role);
         }
 
         // Restituzione della connessione basata sul ruolo
@@ -77,11 +79,11 @@ public class ConnectionFactory {
             try {
                 if (!connection.isClosed()) {
                     connection.close();
-                    System.out.println("Connessione chiusa con successo.");
+                    System.out.println("Connection close.");
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
-                System.out.println("Errore durante la chiusura della connessione.");
+                System.out.println("Error closing the connection.");
             }
         }
     }

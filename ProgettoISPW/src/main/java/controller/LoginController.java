@@ -2,10 +2,7 @@ package controller;
 
 import model.bean.CredentialsBean;
 import model.dao.LoginDAO;
-import model.dao.ConversationDAO;
-import model.dao.MessageDAO;
 import view.LoginView;
-import view.ConversationView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,15 +13,15 @@ public class LoginController {
 
     private final LoginView loginView;
     private final LoginDAO loginDAO;
-    private final Connection connection;
+    private final ApplicationController applicationController; // ApplicationController per la gestione della navigazione
 
-    public LoginController(LoginView loginView, Connection connection) {
+    public LoginController(LoginView loginView, LoginDAO loginDAO, ApplicationController applicationController) {
         this.loginView = loginView;
-        this.connection = connection;
-        this.loginDAO = new LoginDAO(connection);
+        this.loginDAO = loginDAO;
+        this.applicationController = applicationController;
 
-        // Aggiungi il listener per il pulsante di login
-        this.loginView.addSubmitListener(new LoginButtonListener());
+        // Registra il listener per il pulsante di login
+        this.loginView.setSubmitButtonListener(new LoginButtonListener());
     }
 
     // Listener per il pulsante di login
@@ -34,43 +31,26 @@ public class LoginController {
             String username = loginView.getUsername();
             String password = loginView.getPassword();
 
-            if (!username.isEmpty() && !password.isEmpty()) {
-                try {
-                    CredentialsBean credentials = new CredentialsBean(username, password);
-                    if (loginDAO.validateCredentials(credentials)) {
-                        loginView.showSuccess("Login successful!");
-                        openConversationScreen(credentials);
-                    } else {
-                        loginView.showError("Invalid username or password.");
-                    }
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    loginView.showError("An error occurred while logging in.");
+            // Creazione di un oggetto CredentialsBean
+            CredentialsBean credentials = new CredentialsBean();
+            credentials.setUsername(username);
+            credentials.setPassword(password);
+
+            try {
+                // Verifica le credenziali
+                boolean isValid = loginDAO.validateCredentials(credentials);
+
+                if (isValid) {
+                    // Se il login ha successo, delega la navigazione all'ApplicationController
+                    applicationController.onLoginSuccess(credentials);
+                } else {
+                    loginView.showError("Invalid username or password.");
                 }
-            } else {
-                loginView.showError("Username and password cannot be empty.");
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                loginView.showError("Error during login. Please try again later.");
             }
         }
-    }
-
-    // Metodo per aprire la schermata delle conversazioni dopo un login riuscito
-    private void openConversationScreen(CredentialsBean credentials) {
-        // Chiudi la vista di login
-        loginView.close();
-
-        // Esegui l'apertura della ConversationPage in un nuovo thread dell'Event Dispatch
-        javax.swing.SwingUtilities.invokeLater(() -> {
-            // Crea la vista e il DAO per le conversazioni
-            ConversationView conversationView = new ConversationView();
-            ConversationDAO conversationDAO = new ConversationDAO(connection);
-            MessageDAO messageDAO = new MessageDAO(connection);
-
-            // Crea il controller per le conversazioni passando anche le credenziali
-            ConversationController conversationController = new ConversationController(conversationView, conversationDAO, messageDAO, credentials);
-
-            // Mostra la vista della conversazione
-            conversationView.display();
-        });
     }
 
 }

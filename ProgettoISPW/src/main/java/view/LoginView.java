@@ -1,5 +1,7 @@
 package view;
 
+import controller.ApplicationController;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -12,7 +14,7 @@ public class LoginView extends JFrame implements View {
     private JButton submitButton;
     private JLabel forgotPasswordLabel;
 
-    public LoginView() {
+    public LoginView(ApplicationController applicationController) {
         // Impostazioni della finestra principale
         setTitle("Login Page");
         setSize(400, 600);
@@ -41,9 +43,9 @@ public class LoginView extends JFrame implements View {
             JLabel userIcon = new JLabel(new ImageIcon(scaledUserIcon));
             userIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
             mainPanel.add(userIcon);
-            mainPanel.add(Box.createRigidArea(new Dimension(0, 20))); // Spaziatura
+            mainPanel.add(Box.createRigidArea(new Dimension(0, 20)));
         } else {
-            System.err.println("Icona utente non trovata.");
+            System.err.println("Icon not found.");
         }
 
         // Campo username
@@ -79,7 +81,6 @@ public class LoginView extends JFrame implements View {
         setVisible(true);
     }
 
-    // Implementazione dei metodi dell'interfaccia View
     @Override
     public void display() {
         setVisible(true);
@@ -96,6 +97,11 @@ public class LoginView extends JFrame implements View {
         repaint();
     }
 
+    @Override
+    public void back() {
+        // Non necessario per la schermata di login
+    }
+
     // Metodo per creare un JTextField con un placeholder
     private JTextField createTextField(String placeholder) {
         JTextField textField = new JTextField(15);
@@ -106,6 +112,8 @@ public class LoginView extends JFrame implements View {
         textField.setText(placeholder);
         textField.setForeground(Color.GRAY);
         textField.addFocusListener(new java.awt.event.FocusAdapter() {
+
+            @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (textField.getText().equals(placeholder)) {
                     textField.setText("");
@@ -113,6 +121,7 @@ public class LoginView extends JFrame implements View {
                 }
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (textField.getText().isEmpty()) {
                     textField.setForeground(Color.GRAY);
@@ -125,32 +134,35 @@ public class LoginView extends JFrame implements View {
 
     // Metodo per creare un JPasswordField con un placeholder
     private JPasswordField createPasswordField(String placeholder) {
-        JPasswordField passwordField = new JPasswordField(15);
-        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        passwordField.setBorder(BorderFactory.createCompoundBorder(
+        JPasswordField phPasswordField = new JPasswordField(15);
+        phPasswordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        phPasswordField.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1),
                 BorderFactory.createEmptyBorder(5, 15, 5, 15)));
-        passwordField.setEchoChar((char) 0);  // Mostra il placeholder
-        passwordField.setText(placeholder);
-        passwordField.setForeground(Color.GRAY);
-        passwordField.addFocusListener(new java.awt.event.FocusAdapter() {
+        phPasswordField.setEchoChar((char) 0);  // Mostra il placeholder
+        phPasswordField.setText(placeholder);
+        phPasswordField.setForeground(Color.GRAY);
+        phPasswordField.addFocusListener(new java.awt.event.FocusAdapter() {
+
+            @Override
             public void focusGained(java.awt.event.FocusEvent evt) {
-                if (new String(passwordField.getPassword()).equals(placeholder)) {
-                    passwordField.setText("");
-                    passwordField.setForeground(Color.BLACK);
-                    passwordField.setEchoChar('•');  // Bullet per la password
+                if (new String(phPasswordField.getPassword()).equals(placeholder)) {
+                    phPasswordField.setText("");
+                    phPasswordField.setForeground(Color.BLACK);
+                    phPasswordField.setEchoChar('•');  // Mostra il carattere di mascheramento della password
                 }
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent evt) {
-                if (new String(passwordField.getPassword()).isEmpty()) {
-                    passwordField.setForeground(Color.GRAY);
-                    passwordField.setText(placeholder);
-                    passwordField.setEchoChar((char) 0);
+                if (new String(phPasswordField.getPassword()).isEmpty()) {
+                    phPasswordField.setForeground(Color.GRAY);
+                    phPasswordField.setText(placeholder);
+                    phPasswordField.setEchoChar((char) 0);  // Mostra il placeholder di nuovo
                 }
             }
         });
-        return passwordField;
+        return phPasswordField;
     }
 
     // Metodo per caricare un'immagine dal classpath
@@ -173,21 +185,12 @@ public class LoginView extends JFrame implements View {
         return new String(passwordField.getPassword());
     }
 
-    // Getter per il campo username
-    public JTextField getUsernameField() {
-        return usernameField;
-    }
-
-    // Getter per il campo password
-    public JPasswordField getPasswordField() {
-        return passwordField;
-    }
-
-    // Metodi per aggiungere ActionListener ai bottoni
-    public void addSubmitListener(ActionListener listener) {
+    // Metodo per aggiungere un listener al pulsante submit
+    public void setSubmitButtonListener(ActionListener listener) {
         submitButton.addActionListener(listener);
     }
 
+    // Metodi per mostrare messaggi
     public void showError(String message) {
         JOptionPane.showMessageDialog(this, message);
     }

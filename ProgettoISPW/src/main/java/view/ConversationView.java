@@ -1,9 +1,10 @@
 package view;
 
+import controller.ApplicationController;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,39 +12,39 @@ import java.util.Map;
 public class ConversationView extends JFrame implements View {
 
     private JPanel conversationListPanel;
-    private BackgroundPanel messagePanel;  // Usa BackgroundPanel invece di JPanel
+    private BackgroundPanel messagePanel;  // Usa BackgroundPanel per il pannello dei messaggi
     private JTextField messageInputField;
     private JButton sendButton;
-
-    // Attributo per memorizzare l'ID della conversazione corrente
+    private JButton backButton;
+    private transient ApplicationController applicationController;
+    private Map<JButton, Long> conversationButtonMap = new HashMap<>();
     private Long currentConversationId;
 
-    // Mappa per tracciare i pulsanti di conversazione e i loro ID
-    private Map<JButton, Long> conversationButtonMap = new HashMap<>();
-
-    public ConversationView() {
-        // Impostazioni della finestra principale
+    public ConversationView(ApplicationController applicationController) {
+        this.applicationController = applicationController;
         setTitle("Conversation View");
         setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);  // Centra la finestra
+        setLocationRelativeTo(null);
 
-        // Layout principale
         setLayout(new BorderLayout());
 
         // Pannello sinistro: Lista delle conversazioni
         JPanel leftPanel = new JPanel();
-        leftPanel.setBackground(new Color(30, 33, 40)); // Colore di sfondo scuro
+        leftPanel.setBackground(new Color(30, 33, 40));
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
         leftPanel.setPreferredSize(new Dimension(300, 600));
         leftPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
+        // Pulsante "Back"
+        backButton = new JButton("Back");
+        backButton.addActionListener(e -> applicationController.back());
+        leftPanel.add(backButton);
 
         // Lista di conversazioni
         conversationListPanel = new JPanel();
         conversationListPanel.setLayout(new BoxLayout(conversationListPanel, BoxLayout.Y_AXIS));
         conversationListPanel.setBackground(new Color(30, 33, 40));
-
-        // Scroll per il pannello delle conversazioni
         JScrollPane conversationScrollPane = new JScrollPane(conversationListPanel);
         conversationScrollPane.setBorder(null);
         leftPanel.add(conversationScrollPane);
@@ -65,10 +66,8 @@ public class ConversationView extends JFrame implements View {
         rightPanel.add(conversationHeader, BorderLayout.NORTH);
 
         // Pannello dei messaggi con sfondo
-        messagePanel = new BackgroundPanel("background.jpg");  // Sostituisci JPanel con BackgroundPanel
+        messagePanel = new BackgroundPanel("background.jpg");
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
-
-        // Scroll per il pannello dei messaggi
         JScrollPane messageScrollPane = new JScrollPane(messagePanel);
         messageScrollPane.setBorder(null);
         rightPanel.add(messageScrollPane, BorderLayout.CENTER);
@@ -79,7 +78,7 @@ public class ConversationView extends JFrame implements View {
         messageInputPanel.setBackground(Color.WHITE);
         messageInputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        messageInputField = new JTextField("New message");
+        messageInputField = new JTextField("");
         sendButton = new JButton("Send");
 
         messageInputPanel.add(messageInputField, BorderLayout.CENTER);
@@ -91,44 +90,11 @@ public class ConversationView extends JFrame implements View {
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.CENTER);
 
-        // Visualizza la finestra
         setVisible(true);
     }
 
-    // Classe interna per gestire il pannello con immagine di sfondo
-    class BackgroundPanel extends JPanel {
-        private Image backgroundImage;
-
-        public BackgroundPanel(String imagePath) {
-            // Carica l'immagine di sfondo
-            ImageIcon icon = createImageIcon(imagePath);
-            if (icon != null) {
-                this.backgroundImage = icon.getImage();
-            }
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (backgroundImage != null) {
-                g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-            }
-        }
-    }
-
-    // Metodo per caricare un'immagine dal classpath
-    private ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = getClass().getClassLoader().getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
-    }
-
     // Metodo per aggiungere una conversazione alla lista delle conversazioni
-    public void addConversationItem(String id, String title, String projectName) {
+    public void addConversationItem(String id, String title, String projectName, ActionListener selectActionListener) {
         JPanel conversationItem = new JPanel();
         conversationItem.setLayout(new BoxLayout(conversationItem, BoxLayout.X_AXIS));
         conversationItem.setBackground(new Color(42, 46, 54));
@@ -140,90 +106,81 @@ public class ConversationView extends JFrame implements View {
         JButton selectButton = new JButton("Select");
         selectButton.setBackground(Color.LIGHT_GRAY);
 
-        // Mappa il pulsante all'ID della conversazione
         Long conversationId = Long.parseLong(id);
         conversationButtonMap.put(selectButton, conversationId);
 
-        // Aggiungi listener per selezionare la conversazione
-        selectButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                currentConversationId = conversationButtonMap.get(selectButton);  // Aggiorna l'ID corrente
-                System.out.println("Selected Conversation ID: " + currentConversationId);
-                // Carica i messaggi della conversazione selezionata (chiama il controller)
-                // conversationController.loadMessages(currentConversationId);
-            }
-        });
+        // Imposta il listener di selezione per ogni conversazione
+        selectButton.addActionListener(selectActionListener);
 
         conversationItem.add(titleLabel);
         conversationItem.add(Box.createHorizontalGlue());
         conversationItem.add(selectButton);
 
-        // Aggiunge l'elemento della conversazione al pannello della lista
         conversationListPanel.add(conversationItem);
         conversationListPanel.add(Box.createRigidArea(new Dimension(0, 5))); // Spaziatura
 
-        // Aggiorna la GUI
         conversationListPanel.revalidate();
         conversationListPanel.repaint();
     }
 
-
-    // Metodo per ottenere l'ID della conversazione corrente
     public Long getCurrentConversationId() {
         return currentConversationId;
     }
 
-    // Metodo per aggiungere un messaggio al pannello della conversazione
+    public void setCurrentConversationId(Long currentConversationId) {
+        this.currentConversationId = currentConversationId;
+    }
+
     public void addMessageItem(String sender, String message, boolean isReceived) {
         JPanel messageItem = new JPanel();
         messageItem.setLayout(new BoxLayout(messageItem, BoxLayout.Y_AXIS));
-        messageItem.setBackground(new Color(255, 255, 255, 150));  // Sfondo semi-trasparente per contrasto
+        messageItem.setBackground(new Color(255, 255, 255, 150));
         messageItem.setBorder(new EmptyBorder(10, 10, 10, 10));
         messageItem.setMaximumSize(new Dimension(600, 60));
 
-        JLabel messageLabel = new JLabel("<html><p style='width: 150px;'>" + message + "</p></html>");
+        JLabel messageLabel = new JLabel("<html><b>" + sender + ":</b><br/><p style='width: 200px;'>" + message + "</p></html>");
         messageLabel.setFont(new Font("Arial", Font.PLAIN, 14));
 
         if (isReceived) {
             messageLabel.setForeground(Color.BLACK);
-            messageItem.setAlignmentX(Component.LEFT_ALIGNMENT);
+            messageItem.setAlignmentX(Component.RIGHT_ALIGNMENT);
         } else {
             messageLabel.setForeground(Color.BLUE);
-            messageItem.setAlignmentX(Component.RIGHT_ALIGNMENT);
+            messageItem.setAlignmentX(Component.LEFT_ALIGNMENT);
         }
 
         messageItem.add(messageLabel);
         messagePanel.add(messageItem);
-        messagePanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spaziatura
+        messagePanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         refresh();
     }
 
-    // Metodo per ottenere il testo del messaggio inserito
     public String getMessageInput() {
         return messageInputField.getText();
     }
 
-    // Metodo per resettare il campo di input del messaggio
     public void resetMessageInput() {
         messageInputField.setText("");
     }
 
-    // Metodo per aggiungere un listener al pulsante di invio
-    public void addSendButtonListener(ActionListener listener) {
+    public void setSendButtonListener(ActionListener listener) {
         sendButton.addActionListener(listener);
     }
 
-    // Metodo per mostrare un messaggio di errore
     public void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
     }
 
-    // Metodo per cancellare tutti i messaggi dal pannello della conversazione
     public void clearMessages() {
-        messagePanel.removeAll(); // Rimuove tutti i componenti dal pannello dei messaggi
-        refresh(); // Rinfresca la vista per aggiornare il pannello vuoto
+        messagePanel.removeAll();
+        refresh();
+    }
+
+    public void clearConversations() {
+        conversationListPanel.removeAll();
+        conversationButtonMap.clear();
+        refresh();
     }
 
     @Override
@@ -240,5 +197,10 @@ public class ConversationView extends JFrame implements View {
     public void refresh() {
         revalidate();
         repaint();
+    }
+
+    @Override
+    public void back() {
+        applicationController.back();
     }
 }
