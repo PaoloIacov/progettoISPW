@@ -1,16 +1,15 @@
 package view.CLIView;
 
 import model.domain.Credentials;
+import view.View;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
-public class CLILoginView {
+public class CLILoginView implements View{
 
     private BufferedReader reader;
-    private ActionListener submitButtonListener;  // Listener for submit button
 
     public CLILoginView() {
         reader = new BufferedReader(new InputStreamReader(System.in));
@@ -20,57 +19,48 @@ public class CLILoginView {
         System.out.println("=== Login ===");
     }
 
-    public void display() {
-        showLoginScreen();
-        try {
-            getCredentialsInput();
-        } catch (IOException e) {
-            showError("Error reading input. Please try again.");
-        }
-    }
-
-    public void getCredentialsInput() throws IOException {
-        System.out.print("Enter your username: ");
+    public Credentials getCredentialsInput() throws IOException {
+        System.out.print("Insert username: ");
         String username = reader.readLine();
-        System.out.print("Enter your password: ");
+        System.out.print("Insert password: ");
         String password = reader.readLine();
 
-        // Trigger actionPerformed as if a button is clicked
-        if (submitButtonListener != null) {
-            submitButtonListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null) {
-                @Override
-                public String getActionCommand() {
-                    return "SUBMIT";
-                }
-            });
-        }
+        return new Credentials(username, password);
     }
 
     public void showLoginSuccess(Credentials credentials) {
-        System.out.println("Login successful! Welcome, " + credentials.getUsername() + ". You are identified as: " + credentials.getRole());
+        System.out.println("Login successfull, welcome " + credentials.getUsername() + ". Identified as: " + credentials.getRole());
     }
 
     public void showLoginError(String errorMessage) {
-        System.out.println("Login error: " + errorMessage);
+        System.out.println("Errore di login: " + errorMessage);
     }
 
     public void showError(String errorMessage) {
-        System.out.println("Error: " + errorMessage);
+        System.out.println("Errore: " + errorMessage);
     }
 
-    // Methods to interact with the controller
+    @Override
+    public void display() {
+        showLoginScreen();
 
-    public String getUsername() throws IOException {
-        System.out.print("Username: ");
-        return reader.readLine();
     }
 
-    public String getPassword() throws IOException {
-        System.out.print("Password: ");
-        return reader.readLine();
+    @Override
+    public void close() {
+        try {
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void setSubmitButtonListener(ActionListener listener) {
-        this.submitButtonListener = listener;
+    @Override
+    public void refresh() {
+        //Not needed for Login
+    }
+
+    public void back() {
+        //Not needed for Login
     }
 }

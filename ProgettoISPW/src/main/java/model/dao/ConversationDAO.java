@@ -19,17 +19,13 @@ public class ConversationDAO {
     public List<Conversation> getConversationsForUser(String username, int role) throws SQLException {
         switch (role) {
             case 1:  //Employee
-                System.out.println("Employee");
                 // Se l'utente è un dipendente, usa getConversationsForEmployee
                 List<Conversation> employeeConversations = getConversationsForEmployee(username);
-                System.out.println(employeeConversations);
                 return employeeConversations;
 
             case 2, 3:  //Project Manager or Admin
-                System.out.println("Project Manager or Admin");
                 // Se l'utente è un project manager o un admin, usa getConversationsForProjectManager
                 List<Conversation> managerConversations = getConversationsForProjectManager(username);
-                System.out.println(managerConversations);
                 return managerConversations;
 
             default:  // Ruolo non riconosciuto
