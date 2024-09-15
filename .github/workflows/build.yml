@@ -36,4 +36,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         # Specify the correct directory containing the pom.xml
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=PaoloIacov_progettoISPW
-        working-directory: progettoispw  # Add this line to set the working directory
+        working-directory: progettoISPW  # Add this line to set the working directory
