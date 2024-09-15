@@ -1,12 +1,11 @@
 package controller;
 
-import model.bean.CredentialsBean;
+import model.domain.Credentials;
 import model.dao.LoginDAO;
-import view.LoginView;
+import view.GraphicView.LoginView;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class LoginController {
@@ -32,7 +31,7 @@ public class LoginController {
             String password = loginView.getPassword();
 
             // Creazione di un oggetto CredentialsBean
-            CredentialsBean credentials = new CredentialsBean();
+            Credentials credentials = new Credentials();
             credentials.setUsername(username);
             credentials.setPassword(password);
 

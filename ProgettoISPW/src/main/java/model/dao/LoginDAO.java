@@ -1,6 +1,6 @@
 package model.dao;
 
-import model.bean.CredentialsBean;
+import model.domain.Credentials;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +16,7 @@ public class LoginDAO {
     }
 
     // Metodo per validare le credenziali
-    public boolean validateCredentials(CredentialsBean credentials) throws SQLException {
+    public boolean validateCredentials(Credentials credentials) throws SQLException {
         String query = "SELECT username,password,name,surname,role FROM User WHERE username = ? AND password = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, credentials.getUsername());
